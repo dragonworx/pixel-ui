@@ -1,5 +1,6 @@
 import { EventEmitter } from 'eventemitter3';
 import * as PIXI from 'pixi.js';
+import { DynamicTexture } from './dynamicTexture';
 import { log } from './log';
 
 export interface TextureAsset {
@@ -12,11 +13,11 @@ export const texture = (name: string, url: string): TextureAsset => ({
   url,
 });
 
-export enum ThemeDetail {
-  Panel = 'panel',
+export enum ThemeElement {
+  PanelBackground = 'panelBackground',
 }
 
-export class Theme extends EventEmitter {
+export abstract class Theme extends EventEmitter {
   loader: PIXI.Loader;
   textures: Map<string, PIXI.Texture<PIXI.Resource>> = new Map();
 
@@ -29,7 +30,18 @@ export class Theme extends EventEmitter {
     return [];
   }
 
-  preload(): Promise<void> {
+  init(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.preload()
+        .then(() => {
+          this.initGraphics();
+          resolve();
+        })
+        .catch(reject);
+    });
+  }
+
+  protected preload(): Promise<void> {
     return new Promise((resolve, reject) => {
       const { loader, textures, defaultTextureAssets } = this;
       if (defaultTextureAssets.length === 0) {
@@ -54,13 +66,30 @@ export class Theme extends EventEmitter {
     });
   }
 
+  protected initGraphics() {}
+
   texture(name: string) {
     return this.textures.get(name)!;
   }
 }
 
+// default theme
 export class DefaultTheme extends Theme {
   get defaultTextureAssets(): TextureAsset[] {
-    return [texture(ThemeDetail.Panel, './themes/default/panel.png')];
+    return [
+      texture(ThemeElement.PanelBackground, './themes/default/panel.png'),
+    ];
+  }
+
+  initGraphics() {
+    const size = 42;
+    const texture = new DynamicTexture(size, size);
+    const sprite = new PIXI.Sprite(
+      this.textures.get(ThemeElement.PanelBackground),
+    );
+    texture.fillRoundedRect(0, 0, size, size, 10, 0xff0000).paint();
+    texture.drawObject(sprite);
+    this.textures.set(ThemeElement.PanelBackground, texture.asTexture());
+    log('theme init graphics');
   }
 }

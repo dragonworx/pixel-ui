@@ -2,7 +2,7 @@ import EventEmitter from 'eventemitter3';
 import * as PIXI from 'pixi.js';
 import { Layout, FillLayout } from './layout';
 import { log } from './log';
-import { Theme, DefaultTheme } from './theme';
+import { Theme, ThemeElement, DefaultTheme } from './theme';
 
 let counter = 0;
 
@@ -11,6 +11,7 @@ export abstract class Node extends EventEmitter {
   protected container: PIXI.Container;
   protected _width: number = 0;
   protected _height: number = 0;
+  protected elements: Map<ThemeElement, PIXI.Container>;
 
   id: number = counter++;
   parent?: Node;
@@ -22,6 +23,7 @@ export abstract class Node extends EventEmitter {
     this.theme = theme || new DefaultTheme();
     this.layout = this.defaultLayout;
     this.container = new PIXI.Container();
+    this.elements = new Map();
   }
 
   get defaultLayout(): Layout {
@@ -90,4 +92,21 @@ export abstract class Node extends EventEmitter {
   abstract createAppreanceFromTheme(): void;
 
   onUpdate = () => {};
+
+  element<T extends PIXI.Container>(name: ThemeElement): T {
+    return this.elements.get(name)! as T;
+  }
+
+  addElement(name: ThemeElement, element: PIXI.Container) {
+    this.elements.set(name, element);
+    this.container.addChild(element);
+    return element;
+  }
+
+  sizeElement(name: ThemeElement, width: number, height: number) {
+    const element = this.element(name);
+    element.width = width;
+    element.height = height;
+    return element;
+  }
 }

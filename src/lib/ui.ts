@@ -23,7 +23,7 @@ export class UI extends Node {
   static create(domContainer: HTMLElement, theme?: Theme): Promise<UI> {
     return new Promise(resolve => {
       const ui = new UI(theme);
-      ui.theme.preload().then(() => {
+      ui.theme.init().then(() => {
         ui.mount(domContainer);
         resolve(ui);
       });

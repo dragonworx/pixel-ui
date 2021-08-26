@@ -1,8 +1,8 @@
-import { Element } from './element';
+import { Panel } from './panel';
 import { UI } from './ui';
 
 UI.create(document.getElementById('main')!).then(ui => {
   console.log(ui);
-  const element = new Element();
-  ui.addChild(element);
+  const panel = new Panel();
+  ui.addChild(panel);
 });
