@@ -7,16 +7,15 @@ import { Theme, DefaultTheme } from './theme';
 let counter = 0;
 
 export abstract class Node extends EventEmitter {
+  protected layout: Layout;
+  protected container: PIXI.Container;
+  protected _width: number = 0;
+  protected _height: number = 0;
+
   id: number = counter++;
   parent?: Node;
   children: Node[] = [];
   theme: Theme;
-  layout: Layout;
-  container: PIXI.Container;
-  x: number = 0;
-  y: number = 0;
-  width: number = 0;
-  height: number = 0;
 
   constructor(theme?: Theme) {
     super();
@@ -29,15 +28,41 @@ export abstract class Node extends EventEmitter {
     return new FillLayout();
   }
 
+  get x() {
+    return this.container.x;
+  }
+
+  get y() {
+    return this.container.y;
+  }
+
+  get width() {
+    return this._width;
+  }
+
+  get height() {
+    return this._height;
+  }
+
+  setBounds(x: number, y: number, width: number, height: number) {
+    const { container } = this;
+    if (x !== container.x && y !== container.y) {
+      this.container.x = x;
+      this.container.y = y;
+    }
+    this.onResize(width, height);
+  }
+
   onResize(width: number, height: number) {
-    // log(`Resize #${this.id} node ${width}x${height}`);
-    this.width = width;
-    this.height = height;
-    this.applyLayout();
+    if (width !== this._width || height !== this._height) {
+      this._width = width;
+      this._height = height;
+      this.applyLayout();
+    }
   }
 
   applyLayout() {
-    this.layout.apply(this.children, this.width, this.height);
+    this.layout.apply(this.children, this._width, this._height);
   }
 
   addChild(child: Node) {
@@ -48,7 +73,7 @@ export abstract class Node extends EventEmitter {
     if (child.theme !== theme) {
       child.theme = theme;
       child.container.removeChildren();
-      child.createAppreance();
+      child.createAppreanceFromTheme();
     }
     this.children.push(child);
     this.container.addChild(child.container);
@@ -62,7 +87,7 @@ export abstract class Node extends EventEmitter {
     this.container.removeChild(child.container);
   }
 
-  abstract createAppreance(): void;
+  abstract createAppreanceFromTheme(): void;
 
   onUpdate = () => {};
 }

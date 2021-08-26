@@ -12,6 +12,10 @@ export const texture = (name: string, url: string): TextureAsset => ({
   url,
 });
 
+export enum ThemeDetail {
+  Panel = 'panel',
+}
+
 export class Theme extends EventEmitter {
   loader: PIXI.Loader;
   textures: Map<string, PIXI.Texture<PIXI.Resource>> = new Map();
@@ -27,12 +31,15 @@ export class Theme extends EventEmitter {
 
   preload(): Promise<void> {
     return new Promise((resolve, reject) => {
-      const { loader, textures } = this;
-      this.defaultTextureAssets.forEach(textureAsset =>
+      const { loader, textures, defaultTextureAssets } = this;
+      if (defaultTextureAssets.length === 0) {
+        return resolve();
+      }
+      defaultTextureAssets.forEach(textureAsset =>
         loader.add(textureAsset.name, textureAsset.url),
       );
       loader.load((_loader, resources) => {
-        this.defaultTextureAssets.forEach(textureAsset => {
+        defaultTextureAssets.forEach(textureAsset => {
           const { name } = textureAsset;
           const resource = resources[name];
           if (resource.error) {
@@ -54,6 +61,6 @@ export class Theme extends EventEmitter {
 
 export class DefaultTheme extends Theme {
   get defaultTextureAssets(): TextureAsset[] {
-    return [texture('panel', './panel.png')];
+    return [texture(ThemeDetail.Panel, './themes/default/panel.png')];
   }
 }

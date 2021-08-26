@@ -30,12 +30,11 @@ export class UI extends Node {
     });
   }
 
-  createAppreance() {}
+  createAppreanceFromTheme() {}
 
   mount(domContainer: HTMLElement) {
     this.domContainer = domContainer;
     new ResizeObserver(this.onContainerResize).observe(domContainer);
-    this.onContainerResize();
     domContainer.appendChild(this.pixi.view);
     log('UI Mounting');
   }
@@ -44,8 +43,8 @@ export class UI extends Node {
     const { domContainer, pixi } = this;
     if (domContainer) {
       const { offsetWidth: width, offsetHeight: height } = domContainer;
-      pixi.renderer.resize(width, height);
       this.onResize(width, height);
+      pixi.renderer.resize(width, height);
       pixi.render();
     }
   };

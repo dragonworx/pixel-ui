@@ -4,7 +4,7 @@ import { Node } from './node';
 export class Element extends Node {
   bg?: PIXI.NineSlicePlane;
 
-  createAppreance() {
+  createAppreanceFromTheme() {
     const texture = this.theme.texture('panel');
     console.log(texture);
     const size = 10;
